@@ -2,36 +2,40 @@ package com.tinydavid.snoocodecompass.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
 import com.tinydavid.snoocodecompass.databinding.ActivityMainBinding
 import com.tinydavid.snoocodecompass.domain.use_cases.GetAddressUseCase
 import com.tinydavid.snoocodecompass.domain.use_cases.RoundOffDecimalUseCase
+import com.tinydavid.snoocodecompass.ui.compass_navigation.CompassNavigationActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : Activity() {
+class MainActivity : FragmentActivity() {
 
     private lateinit var mBinding: ActivityMainBinding
 
     private lateinit var sensorManager: SensorManager
 
-    @Inject
-    private  lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModels()
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
@@ -47,20 +51,32 @@ class MainActivity : Activity() {
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
+        mBinding.scrollMain.requestFocus()
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-        val deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
+//        mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
-            mBinding.textMagStatus.text = "There's a magnetometer."
-            // Success! There's a magnetometer.
+         if (hasMagnetometer) {
+             mBinding.textMagStatus.text ="There's a magnetometer."
+             mBinding.buttonCompassNavigation.isEnabled = true
         } else {
-            // Failure! No magnetometer.
-            mBinding.textMagStatus.text = "No magnetometer."
+             mBinding.textMagStatus.text = "No magnetometer."
+             mBinding.buttonCompassNavigation.isEnabled = false
         }
+
+        mBinding.textGpsStatus.text = if (!hasGps) {
+            Log.d(TAG, "This hardware doesn't have GPS.")
+            "There's a GPS."
+            // Fall back to functionality that doesn't use location or
+            // warn the user that location function isn't available.
+        } else {
+            "No GPS."
+        }
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-/*        viewModel.location.observe(this) { location ->
+        viewModel.location.observe(this) { location ->
             if (location != null) {
 
                 val lat = location.latitude
@@ -72,7 +88,7 @@ class MainActivity : Activity() {
 
                 mBinding.textLocationAddress.text = locationAddress
             }
-        }*/
+        }
 
         mBinding.buttonLocation.setOnClickListener { getLastLocation() }
         mBinding.buttonDestination.setOnClickListener {
@@ -98,7 +114,7 @@ class MainActivity : Activity() {
             }
         }
 
-/*
+
         mBinding.buttonMap.setOnClickListener {
             val location = viewModel.location.value
             val destination = viewModel.destination.value
@@ -124,11 +140,28 @@ class MainActivity : Activity() {
 
             }
         }
-*/
+
+        mBinding.buttonCompassNavigation.setOnClickListener {
+            startActivity(Intent(this, CompassNavigationActivity::class.java))
+        }
+
+        adjustInset()
 
         getLastLocation()
 
     }
+
+    private val hasGps: Boolean
+        get() =
+            packageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS)
+
+    private val hasMagnetometer: Boolean
+        get() =
+            sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
+
+    private val hasAccelerometer: Boolean
+        get() =
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
 
 
     @SuppressLint("MissingPermission")
@@ -178,6 +211,18 @@ class MainActivity : Activity() {
         override fun onLocationResult(locationResult: LocationResult) {
             val lastLocation: Location = locationResult.lastLocation
             viewModel.setLocation(lastLocation)
+        }
+
+        override fun onLocationAvailability(p0: LocationAvailability) {
+            p0.isLocationAvailable
+            super.onLocationAvailability(p0)
+            if (p0.isLocationAvailable) {
+                Log.d(TAG, "Location Availability lost")
+
+            } else {
+                Log.d(TAG, "Location Availability lost")
+
+            }
         }
     }
 
@@ -229,9 +274,24 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun adjustInset() {
+
+        if (applicationContext.resources.configuration.isScreenRound) {
+
+            val inset = (FACTOR * Resources.getSystem().displayMetrics.widthPixels).toInt()
+
+            mBinding.layoutContent.setPadding(inset, inset, inset, inset)
+
+        }
+
+    }
+
     companion object {
         private const val PERMISSION_ID = 42
         private const val INCREMEANT = 0.1
+        private const val TAG = "MainActivity"
+
+        private const val FACTOR = 0.146467f // c = a * sqrt(2)
 
     }
 }

@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/layout/activity_compass_navigation.xml" value="1.5" />
+        <entry key="app/src/main/res/layout/activity_home.xml" value="1.0" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="1.1035714285714286" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2845" />
       </map>
     </option>
   </component>
