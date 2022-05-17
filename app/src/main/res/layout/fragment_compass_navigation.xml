@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll_compass_navigation"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/list_item_background"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".ui.compass_navigation.CompassNavigationFragment"
+    tools:deviceIds="wear">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/darker_gray"
+        android:padding="@dimen/box_inset_layout_padding"
+        tools:context=".ui.compass_navigation.CompassNavigationActivity"
+        tools:deviceIds="wear">
+
+        <ImageView
+            android:id="@+id/image_compass_index"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/compass_index"
+            app:layout_constraintDimensionRatio="h,1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/image_compass_point"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="23dp"
+            android:layout_marginTop="23dp"
+            android:layout_marginEnd="23dp"
+            android:layout_marginBottom="23dp"
+            android:src="@drawable/compass_point_0"
+            app:layout_constraintBottom_toBottomOf="@+id/image_compass_index"
+            app:layout_constraintEnd_toEndOf="@+id/image_compass_index"
+            app:layout_constraintStart_toStartOf="@+id/image_compass_index"
+            app:layout_constraintTop_toTopOf="@+id/image_compass_index" />
+
+        <TextView
+            android:id="@+id/text_compass_index"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toTopOf="@+id/text_compass_degree"
+            app:layout_constraintEnd_toEndOf="@+id/image_compass_point"
+            app:layout_constraintStart_toStartOf="@+id/image_compass_point"
+            app:layout_constraintTop_toBottomOf="@+id/image_compass_point"
+            tools:text="NE" />
+
+        <TextView
+            android:id="@+id/text_compass_degree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toTopOf="@+id/image_compass_point"
+            app:layout_constraintEnd_toEndOf="@+id/image_compass_point"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/image_compass_point"
+            app:layout_constraintTop_toBottomOf="@+id/text_compass_index"
+            tools:text="368" />
+
+        <TextView
+            android:id="@+id/text_distance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/image_compass_index"
+            app:layout_constraintStart_toStartOf="@+id/image_compass_index"
+            app:layout_constraintTop_toBottomOf="@+id/image_compass_index"
+            tools:text="12500.5698" />
+
+        <TextView
+            android:id="@+id/text_bearing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/text_distance"
+            app:layout_constraintStart_toStartOf="@+id/text_distance"
+            app:layout_constraintTop_toBottomOf="@+id/text_distance"
+            tools:text="48.58" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

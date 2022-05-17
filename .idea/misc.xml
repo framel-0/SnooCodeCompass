@@ -3,9 +3,17 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="app/src/main/res/layout/activity_compass_navigation.xml" value="1.5" />
+        <entry key="app/src/main/res/layout/activity_compass_navigation.xml" value="0.9039451114922813" />
         <entry key="app/src/main/res/layout/activity_home.xml" value="1.0" />
+        <entry key="app/src/main/res/layout/activity_hospital.xml" value="0.9349593495934959" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="1.1035714285714286" />
+        <entry key="app/src/main/res/layout/activity_test.xml" value="0.95" />
+        <entry key="app/src/main/res/layout/fragment_compass_calibration.xml" value="1.3723958333333333" />
+        <entry key="app/src/main/res/layout/fragment_compass_navigation.xml" value="0.9669724770642202" />
+        <entry key="app/src/main/res/layout/fragment_health_care.xml" value="1.3723958333333333" />
+        <entry key="app/src/main/res/layout/fragment_home.xml" value="1.1848958333333333" />
+        <entry key="app/src/main/res/layout/list_item_health_care.xml" value="1.2638888888888888" />
+        <entry key="app/src/main/res/layout/list_item_hospital.xml" value="1.2777777777777777" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2845" />
       </map>
     </option>

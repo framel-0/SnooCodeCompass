@@ -4,7 +4,7 @@
     Because the window insets on round devices are larger than 15dp, this padding only applies
     to square screens.
     -->
-    <dimen name="box_inset_layout_padding">0dp</dimen>
+    <dimen name="box_inset_layout_padding">3.8dp</dimen>
 
     <!--
     This padding applies to both square and round screens. The total padding between the buttons
@@ -12,4 +12,7 @@
     inner_frame_layout_padding (below variable) on round screens.
     -->
     <dimen name="inner_frame_layout_padding">5dp</dimen>
+    <dimen name="default_edit_text_padding">4dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="default_button_hieght">40dp</dimen>
 </resources>

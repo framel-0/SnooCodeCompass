@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_home">
+
+    <fragment
+        android:id="@+id/fragment_home"
+        android:name="com.tinydavid.snoocodecompass.ui.home.HomeFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_fragment_home_to_fragment_health_care"
+            app:destination="@id/fragment_health_care" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_health_care"
+        android:name="com.tinydavid.snoocodecompass.ui.health_care.HealthCareFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_health_care">
+        <action
+            android:id="@+id/action_fragment_health_care_to_fragment_compass_navigation"
+            app:destination="@id/fragment_compass_navigation" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_compass_navigation"
+        android:name="com.tinydavid.snoocodecompass.ui.compass_navigation.CompassNavigationFragment"
+        android:label="Compass Navigation"
+        tools:layout="@layout/fragment_compass_navigation" >
+        <argument
+            android:name="healthCare"
+            app:argType="com.tinydavid.snoocodecompass.domain.models.HealthCare" />
+        <action
+            android:id="@+id/action_fragment_compass_navigation_to_fragment_compass_calibration"
+            app:destination="@id/fragment_compass_calibration" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_compass_calibration"
+        android:name="com.tinydavid.snoocodecompass.ui.compass_calibration.CompassCalibrationFragment"
+        android:label="compass_calibration"
+        tools:layout="@layout/fragment_compass_calibration" />
+</navigation>

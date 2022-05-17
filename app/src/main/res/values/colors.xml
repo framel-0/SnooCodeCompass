@@ -12,4 +12,8 @@
     <color name="light_green_light">#bef67a</color>
     <color name="light_green_dark">#5a9216</color>
 
+    <color name="default_background">#101010</color>
+    <color name="list_item_background">#3C3C3C</color>
+    <color name="button_text">#3C3C3C</color>
+
 </resources>
