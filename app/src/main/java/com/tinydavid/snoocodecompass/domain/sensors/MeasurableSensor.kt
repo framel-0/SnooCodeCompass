@@ -12,7 +12,11 @@ abstract class MeasurableSensor(
     abstract fun stopListening()
 
     fun setOnSensorValueChangedListener(listener: (List<Float>) -> Unit) {
-
         onSensorValueChanged = listener
     }
+
+    fun setOnSensorAccuracyChangedListener(listener: (Int) -> Unit) {
+        onSensorAccuracyChanged = listener
+    }
+
 }

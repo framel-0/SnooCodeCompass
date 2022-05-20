@@ -4,8 +4,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import com.tinydavid.snoocodecompass.domain.sensors.AndroidSensor
+import javax.inject.Inject
 
-class AccelerometerSensor(
+class AccelerometerSensor @Inject constructor(
     context: Context
 ) : AndroidSensor(
     context = context,
@@ -13,7 +14,7 @@ class AccelerometerSensor(
     sensorType = Sensor.TYPE_ACCELEROMETER
 )
 
-class MagnetometerSensor(
+class MagnetometerSensor @Inject constructor(
     context: Context
 ) : AndroidSensor(
     context = context,
