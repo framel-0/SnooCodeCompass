@@ -28,11 +28,9 @@ import com.tinydavid.snoocodecompass.R
 import com.tinydavid.snoocodecompass.common.Contants
 import com.tinydavid.snoocodecompass.databinding.FragmentCompassNavigationBinding
 import com.tinydavid.snoocodecompass.domain.models.HealthCare
-import com.tinydavid.snoocodecompass.domain.use_cases.CalRadianUseCase
 import com.tinydavid.snoocodecompass.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CompassNavigationFragment : Fragment(), SensorEventListener {
@@ -67,11 +65,10 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
     private lateinit var mLocationRequest: LocationRequest
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
-    val args: CompassNavigationFragmentArgs by navArgs()
+    private val args: CompassNavigationFragmentArgs by navArgs()
 
+    private var accuracyReceived = false
 
-    @Inject
-    lateinit var calRadianUseCase: CalRadianUseCase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -85,7 +82,7 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
         super.onViewCreated(view, savedInstanceState)
         mBinding.scrollCompassNavigation.requestFocus()
 
-        val healthCare: HealthCare? = args.healthCare
+        val healthCare: HealthCare = args.healthCare
 
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -148,18 +145,16 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
             Log.d(TAG, "Bearing btn point A and B: $brng")
 
             val myOptions = BitmapFactory.Options()
-            myOptions.inDither = true
             myOptions.inScaled = false
             myOptions.inPreferredConfig = Bitmap.Config.ARGB_8888 // important
 
-            myOptions.inPurgeable = true
 
             val bitmap =
                 BitmapFactory.decodeResource(resources, R.drawable.compass_index, myOptions)
 
             val workingBitmap = Bitmap.createBitmap(bitmap)
             val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
-            val mBitmap = getCroppedBitmap(workingBitmap);
+            val mBitmap = getCroppedBitmap(workingBitmap)
 
             val canvas = Canvas(mutableBitmap)
 
@@ -243,7 +238,7 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
         return (meter * 0.001)
     }
 
-    fun getCroppedBitmap(bitmap: Bitmap): Bitmap {
+    private fun getCroppedBitmap(bitmap: Bitmap): Bitmap {
         val output = Bitmap.createBitmap(
             bitmap.width,
             bitmap.height, Bitmap.Config.ARGB_8888
@@ -299,6 +294,7 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
 
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+        accuracyReceived = true;
         // Do something here if sensor accuracy changes.
         if (sensor == mAccelerometerSensor) {
             Log.d(TAG, "accelerometer accuracy: $accuracy")
@@ -314,6 +310,10 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
 
 
     override fun onSensorChanged(event: SensorEvent) {
+
+        if (!accuracyReceived) {
+            onAccuracyChanged(event.sensor, event.accuracy);
+        }
 
 //        val azimuth: Float = event.values[0]
 //        val pitch: Float = event.values[1]
@@ -331,12 +331,12 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
             isLastMagnetometerArrayCopied = true
         }
 
-        if (isLastAccelerometerArrayCopied && isLastMagnetometerArrayCopied && System.currentTimeMillis() - lastUpdatedTime > 250) {
+        if (mViewModel.isLastAccelerometerArrayCopied && isLastMagnetometerArrayCopied && System.currentTimeMillis() - lastUpdatedTime > 250) {
 
-            val matrix = SensorManager.getRotationMatrix(
-                rMatrix,
-                lMatrix,
-                lastAccelerometer,
+            SensorManager.getRotationMatrix(
+                mViewModel.rMatrix,
+                mViewModel.lMatrix,
+                mViewModel.lastAccelerometer,
                 lastMagnetometer
             )
 
@@ -412,7 +412,7 @@ class CompassNavigationFragment : Fragment(), SensorEventListener {
     }
 
     companion object {
-        private const val TAG = "Compass_Fragment"
+        private const val TAG = "Compass_Navigation"
 
     }
 }

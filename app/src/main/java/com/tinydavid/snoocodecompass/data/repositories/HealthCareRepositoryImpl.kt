@@ -24,6 +24,7 @@ class HealthCareRepositoryImpl @Inject constructor(
             return if (jsonFileString != null) {
                 val healthCares: List<HealthCare> =
                     gson.fromJson(jsonFileString, listHealthCareType)
+
                 healthCares
 
             } else {

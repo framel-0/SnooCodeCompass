@@ -6,7 +6,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -33,10 +32,12 @@ class CompassCalibrationFragment : Fragment(), SensorEventListener {
     private var mMagnetometerSensor: Sensor? = null
     private var mAccelerometerSensor: Sensor? = null
 
+    private var accuracyReceived = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentCompassCalibrationBinding.inflate(inflater, container, false)
         return mBinding.root
     }
@@ -50,7 +51,7 @@ class CompassCalibrationFragment : Fragment(), SensorEventListener {
 
         mAccelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        Glide.with(this).load(R.drawable.infinity).into(mBinding.imageView);
+        Glide.with(this).load(R.drawable.infinity).into(mBinding.imageView)
 
         mainViewModel.magnetometerAccuracy.observe(viewLifecycleOwner) { accuracy ->
 
@@ -63,10 +64,16 @@ class CompassCalibrationFragment : Fragment(), SensorEventListener {
 
 
 
-    override fun onSensorChanged(p0: SensorEvent?) {
+
+    override fun onSensorChanged(event: SensorEvent) {
+
+        if (!accuracyReceived) {
+            onAccuracyChanged(event.sensor, event.accuracy);
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+        accuracyReceived = true;
         if (sensor == mAccelerometerSensor) {
             Log.d(TAG, "accelerometer accuracy: $accuracy")
         }

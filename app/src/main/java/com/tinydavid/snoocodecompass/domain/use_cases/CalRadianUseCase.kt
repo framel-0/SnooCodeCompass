@@ -5,7 +5,7 @@ import javax.inject.Inject
 class CalRadianUseCase @Inject constructor() {
 
     operator fun invoke(digit: Double): Double {
-        val radian = digit * Math.PI / 180;
+        val radian = digit * Math.PI / 180
         return radian
     }
 }

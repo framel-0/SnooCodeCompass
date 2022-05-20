@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private val mViewModel: MainViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -28,7 +29,12 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
 //        setupActionBarWithNavController(navController, appBarConfiguration)
 
+
         mViewModel.healthCares.observe(this) { healthCares ->
+        }
+
+        mViewModel.location.observe(this) { location ->
+            mViewModel.getHealthCares(location)
         }
 
     }

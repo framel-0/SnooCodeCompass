@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.tinydavid.snoocodecompass.data.AccelerometerSensor
 import com.tinydavid.snoocodecompass.domain.use_cases.GetBearingUseCase
 import com.tinydavid.snoocodecompass.domain.use_cases.GetDistanceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,9 +13,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CompassNavigationViewModel @Inject constructor(
+    private var accelerometerSensor: AccelerometerSensor,
     val distanceUseCase: GetDistanceUseCase,
     val bearingUseCase: GetBearingUseCase
 ) : ViewModel() {
+
+    val lastAccelerometer = FloatArray(3)
+    private val lastMagnetometer = FloatArray(3)
+
+    val rMatrix = FloatArray(9)
+    val lMatrix = FloatArray(9)
+
+    private val orientation = FloatArray(3)
+
+
+    var isLastAccelerometerArrayCopied = false
+    private var isLastMagnetometerArrayCopied = false
 
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location> = _location
@@ -31,6 +45,14 @@ class CompassNavigationViewModel @Inject constructor(
     private val _bearing = MutableLiveData<Double>()
     val bearing: LiveData<Double> = _bearing
 
+
+    init {
+        accelerometerSensor.startListening()
+        accelerometerSensor.setOnSensorValueChangedListener { values ->
+            System.arraycopy(values, 0, lastAccelerometer, 0, values.size)
+            isLastAccelerometerArrayCopied = true
+        }
+    }
 
     fun updateLocation(location: Location?) {
         if (location != null)

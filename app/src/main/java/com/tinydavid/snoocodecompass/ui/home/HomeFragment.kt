@@ -18,19 +18,27 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.tinydavid.snoocodecompass.R
 import com.tinydavid.snoocodecompass.common.Contants
 import com.tinydavid.snoocodecompass.databinding.FragmentHomeBinding
+import com.tinydavid.snoocodecompass.domain.models.HealthCare
 import com.tinydavid.snoocodecompass.domain.use_cases.AdjustInsetUseCase
 import com.tinydavid.snoocodecompass.domain.use_cases.GetAddressUseCase
 import com.tinydavid.snoocodecompass.domain.use_cases.RoundOffDecimalUseCase
+import com.tinydavid.snoocodecompass.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -41,12 +49,17 @@ class HomeFragment : Fragment() {
 
     private val mBinding get() = _binding!!
 
+    private val mainViewModel: MainViewModel by activityViewModels()
+
     private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var sensorManager: SensorManager
 
     private lateinit var mLocationRequest: LocationRequest
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
+    private lateinit var mLoadingGroup: Group
+    private lateinit var mErrorText: TextView
 
     @Inject
     lateinit var mRoundOffDecimalUseCase: RoundOffDecimalUseCase
@@ -72,7 +85,10 @@ class HomeFragment : Fragment() {
 
         mBinding.scrollHome.requestFocus()
 
-        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        mLoadingGroup = mBinding.groupHomeLoading
+        mErrorText = mBinding.textHomeError
+
+        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
         mLocationRequest = LocationRequest.create().apply {
             interval = 1000 * Contants.DEFAULT_UPDATE_INTERVAL
@@ -80,7 +96,7 @@ class HomeFragment : Fragment() {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         if (hasMagnetometer) {
             mBinding.textMagStatus.text = "Magnetometer Avail"
@@ -102,7 +118,7 @@ class HomeFragment : Fragment() {
             mLocationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
         }
 
-        viewModel.location.observe(viewLifecycleOwner) { location ->
+        mainViewModel.location.observe(viewLifecycleOwner) { location ->
             if (location != null) {
 
                 val lat = location.latitude
@@ -118,7 +134,7 @@ class HomeFragment : Fragment() {
 
         mBinding.buttonLocation.setOnClickListener { getLastLocation() }
         mBinding.buttonDestination.setOnClickListener {
-            val location = viewModel.location.value
+            val location = mainViewModel.location.value
             if (location != null) {
 
                 val lat = location.latitude
@@ -142,7 +158,7 @@ class HomeFragment : Fragment() {
 
 
         mBinding.buttonMap.setOnClickListener {
-            val location = viewModel.location.value
+            val location = mainViewModel.location.value
             val destination = viewModel.destination.value
             if (location != null && destination != null) {
                 val lat = location.latitude
@@ -151,8 +167,6 @@ class HomeFragment : Fragment() {
                 val latDes = destination.latitude
                 val lngDes = destination.longitude
 
-                val uriStr1 = "google.streetview:cbll=$lat,$lng"
-                val uriStr2 = "geo:$lat,$lng?z=18"
                 val uriStr = "google.navigation:q=$latDes,$lngDes"
                 val gmnIntentUri = Uri.parse(uriStr)
 
@@ -167,6 +181,10 @@ class HomeFragment : Fragment() {
             }
         }
 
+        mainViewModel.location.observe(viewLifecycleOwner) { location ->
+            mBinding.buttonCompassNavigation.isEnabled = location != null
+        }
+
         mBinding.buttonCompassNavigation.setOnClickListener {
             val action = HomeFragmentDirections.actionFragmentHomeToFragmentHealthCare()
             view.findNavController().navigate(action)
@@ -174,7 +192,22 @@ class HomeFragment : Fragment() {
 
         adjustInsetUseCase(mBinding.scrollHome)
 
-        getLastLocation()
+        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            mainViewModel.uiState.collect { uiState ->
+                // New value received
+                when (uiState) {
+                    is HomeUiState.Loading -> showLoading()
+                    is HomeUiState.Success -> setHealthCares(uiState.healthCares)
+                    is HomeUiState.Error -> showError(getString(R.string.load_health_care_error_message))
+                }
+            }
+
+//            }
+        }
+
+        if (!mainViewModel.healthCaresLoaded)
+            getLastLocation()
 
 
     }
@@ -189,6 +222,23 @@ class HomeFragment : Fragment() {
             sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
 
 
+    private fun showLoading() {
+        mErrorText.visibility = View.GONE
+        mLoadingGroup.visibility = View.VISIBLE
+    }
+
+    private fun setHealthCares(healthCares: List<HealthCare>) {
+        mLoadingGroup.visibility = View.GONE
+        mainViewModel.setHealthCares(healthCares)
+    }
+
+    private fun showError(message: String) {
+        mLoadingGroup.visibility = View.GONE
+
+        mErrorText.visibility = View.VISIBLE
+        mErrorText.text = message
+    }
+
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
         if (checkPermissions()) {
@@ -202,7 +252,7 @@ class HomeFragment : Fragment() {
                     if (location == null) {
                         requestNewLocationData()
                     } else {
-                        viewModel.setLocation(location)
+                        mainViewModel.setLocation(location)
 
                     }
                 }
@@ -218,7 +268,7 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.getMainLooper()
@@ -229,7 +279,7 @@ class HomeFragment : Fragment() {
 
         override fun onLocationResult(locationResult: LocationResult) {
             val lastLocation: Location = locationResult.lastLocation
-            viewModel.setLocation(lastLocation)
+            mainViewModel.setLocation(lastLocation)
         }
 
         override fun onLocationAvailability(p0: LocationAvailability) {
@@ -247,7 +297,7 @@ class HomeFragment : Fragment() {
 
     private fun isLocationEnabled(): Boolean {
         val locationManager: LocationManager =
-            requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
         )

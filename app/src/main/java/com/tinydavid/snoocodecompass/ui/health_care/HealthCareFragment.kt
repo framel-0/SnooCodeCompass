@@ -1,5 +1,6 @@
 package com.tinydavid.snoocodecompass.ui.health_care
 
+import android.location.Location
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,11 +14,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.tinydavid.snoocodecompass.common.Utils
 import com.tinydavid.snoocodecompass.databinding.FragmentHealthCareBinding
 import com.tinydavid.snoocodecompass.domain.models.HealthCare
 import com.tinydavid.snoocodecompass.ui.MainViewModel
 import com.tinydavid.snoocodecompass.ui.health_care.adapter.HealthCareListAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 class HealthCareFragment : Fragment() {
@@ -35,10 +38,12 @@ class HealthCareFragment : Fragment() {
 
     private lateinit var mHealthCareRecycler: RecyclerView
 
+    private lateinit var myLocation: Location
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentHealthCareBinding.inflate(inflater, container, false)
         return mBinding.root
@@ -68,6 +73,11 @@ class HealthCareFragment : Fragment() {
 //
 //            }
 //        }
+
+        mainViewModel.location.observe(viewLifecycleOwner) { location ->
+            if (location != null)
+                myLocation = location
+        }
 
         mainViewModel.healthCares.observe(viewLifecycleOwner) { healthCares ->
             showHospitals(healthCares)
@@ -102,6 +112,12 @@ class HealthCareFragment : Fragment() {
 
         mLoadingGroup.visibility = View.GONE
         mHealthCareRecycler.visibility = View.VISIBLE
+
+//        if (!mainViewModel.healthCaresSorted) {
+            Collections.sort(healthCares, Utils.LocationComparator(myLocation))
+//            mainViewModel.setHealthCares(healthCares)
+//            mainViewModel.healthCaresSorted = true
+//        }
 
         listAdapter.setHealthCares(healthCares)
 
